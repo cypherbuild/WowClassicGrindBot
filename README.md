@@ -18,13 +18,13 @@
 
 - Further detail about the architecture can be found in [Blog post](http://www.codesin.net/post/wowbot/).
 
-- Pathing: 
-    * World map / Outdoor there are multiple solutions - *by default the app attempts to discover the available pathing in the following order*:
-        * V3 Remote - Out of process [AmeisenNavigation](https://github.com/Xian55/AmeisenNavigation/tree/feature/guess-z-coord-after-rewrite)
-        * V1 Remote - Out of process [PathingAPI](https://github.com/Xian55/WowClassicGrindBot/tree/dev/PathingAPI).
-        * V1 Local - In process [PPather](https://github.com/Xian55/WowClassicGrindBot/tree/dev/PPather).
-    * Indoors pathfinder only works properly if `PathFilename` is exists.
-    * Dungeons / instances not yet supported.
+- Pathfinders: 
+    * World map - Outdoor there are multiple solutions - *by default the app attempts to discover the available services in the following order*:
+        * **V3 Remote**: Out of process [AmeisenNavigation](https://github.com/Xian55/AmeisenNavigation/tree/feature/guess-z-coord-after-rewrite)
+        * **V1 Remote**: Out of process [PathingAPI](https://github.com/Xian55/WowClassicGrindBot/tree/dev/PathingAPI) more info [here](#v1-remote-pathing---pathingapi)
+        * **V1 Local**: In process [PPather](https://github.com/Xian55/WowClassicGrindBot/tree/dev/PPather)
+    * World map - Indoors pathfinder only works properly if `PathFilename` is exists.
+    * Dungeons / instances **not** supported!
 
 # Features
 
@@ -106,6 +106,15 @@ These files are required in order to start the application!
 
 Copy the previously mentioned files under **\Json\MPQ** folder (e.g. `C:\WowClassicGrindBot\Json\MPQ`)
 
+Technical details about **V1**:
+- Precompiled x86 and x64 [Stormlib](https://github.com/ladislav-zezula/StormLib)
+- Source code accessible, written in **C#**
+- Uses `*.mpq` files as source
+- Extracts the geometry on demand during runtime
+- Loads those `*.adt` files which are in use. Lower memory usage compare to V3
+- After calculating a path successfully, caches it under `Json\PathInfo\_CONTINENT_NAME_\`
+- Easy to visualize path steps and development iteratively
+
 ## 2.2 Optional - Using V3 Remote Pathing
 
 Download the navmesh files.
@@ -117,6 +126,16 @@ Download the navmesh files.
 1. Create a [build](https://github.com/Xian55/WowClassicGrindBot/issues/449) of [AmeisenNavigation](https://github.com/Xian55/AmeisenNavigation/tree/feature/guess-z-coord-after-rewrite)
 1. Navigate to the build location and find `config.cfg`
 1. Edit the file last line to look as `sMmapsPath=C:\mmaps`
+
+Technical details about **V3**:
+- Uses an another project called [AmeisenNavigation](https://github.com/Xian55/AmeisenNavigation/tree/feature/guess-z-coord-after-rewrite)
+- Under the hood uses [Recast and Detour](https://github.com/recastnavigation/recastnavigation)
+- Source code is written in **C++**
+- Uses `*.mmap` files as source
+- Loads the whole continent navmesh data into memory. Higher base memory usage, at least around *~600mb*
+- It's super fast path calculations
+- Not always suitable for player movement.
+- Requires considerable amount of time to tweak the navmesh config, then bake it
 
 ## 3.1 System / Video Requirements
 
@@ -389,31 +408,30 @@ Take a look at the class files in `/Json/class` for examples of what you can do.
 | `"ImmunityBlacklist"` | List of Npc ids which have some sort of `School` immunities | true | `""` |
 | `"IntVariables"` | List of user defined `integer` variables | true | `[]` |
 | --- | --- | --- | --- |
-| `"Pull"` | Sequence of `KeyAction(s)` to execute upon [Pull Goal](#pull-goal) | true | `[]` |
-| `"Combat"` | Sequence of `KeyAction(s)` to execute upon [Combat Goal](#combat-goal) | **false** | `[]` |
-| `"AssistFocus"` | Sequence of `KeyAction(s)` to execute upon [Assist Focus Goal](#assist-focus-goal) | **false** | `[]` |
-| `"Adhoc"` | Sequence of `KeyAction(s)` to execute upon [Adhoc Goals](#adhoc-goals) | true | `[]` |
-| `"Parallel"` | Sequence of `KeyAction(s)` to execute upon [Parallel Goal](#parallel-goals) | true | `[]` |
-| `"NPC"` | Sequence of `KeyAction(s)` to execute upon [NPC Goal](#npc-goals) | true | `[]` |
-| `"Wait"` | Sequence of `KeyAction(s)` to execute upon [Wait Goal](#wait-goals) | true | `[]` |
+| `"Pull"` | [KeyActions](#keyactions) to execute upon [Pull Goal](#pull-goal) | true | `{}` |
+| `"Combat"` | [KeyActions](#keyactions) to execute upon [Combat Goal](#combat-goal) | **false** | `{}` |
+| `"AssistFocus"` | [KeyActions](#keyactions) to execute upon [Assist Focus Goal](#assist-focus-goal) | **false** | `{}` |
+| `"Adhoc"` | [KeyActions](#keyactions) to execute upon [Adhoc Goals](#adhoc-goals) | true | `{}` |
+| `"Parallel"` | [KeyActions](#keyactions) to execute upon [Parallel Goal](#parallel-goals) | true | `{}` |
+| `"NPC"` | [KeyActions](#keyactions) to execute upon [NPC Goal](#npc-goals) | true | `{}` |
+| `"Wait"` | [KeyActions](#keyactions) to execute upon [Wait Goal](#wait-goals) | true | `{}` |
 | --- | --- | --- | --- |
 | `"GatherFindKeys"` | List of strings for switching between gathering profiles | true | `string[]` |
-| `"JumpKey"` | `Consolekey` to be pressed on Jump | true | `"Spacebar"` |
-| `"InteractKey"` | `Consolekey` to be pressed on Interact | true | `"I"` |
-| `"TargetLastTargetKey"` | `Consolekey` to be pressed to Target last target | true | `"G"` |
-| `"StandUpKey"` | `Consolekey` to be pressed to stand up | true | `"X"` |
-| `"ClearTargetKey"` | `Consolekey` to be pressed to clear current target | true | `"Insert"` |
-| `"StopAttackKey"` | `Consolekey` to be pressed to stop attack | true | `"Delete"` |
-| `"TargetNearestTargetKey"` | `Consolekey` to be pressed to target nearest target | true | `"Tab"` |
-| `"TargetTargetOfTargetKey"` | `Consolekey` to be pressed to target - target of target | true | `"F"` |
-| `"TargetPetKey"` | `Consolekey` to be pressed to target pet | true | `"Multiply"` |
-| `"PetAttackKey"` | `Consolekey` to be pressed to send attack pet | true | `"Subtract"` |
-| `"MountKey"` | `Consolekey` to be pressed to use mount | true | `"O"` |
-| `"HearthstoneKey"` | `Consolekey` to be pressed to use hearthstone | true | `"I"` |
-| `"ForwardKey"` | `Consolekey` to be pressed to move forward | true | `"UpArrow"` |
-| `"BackwardKey"` | `Consolekey` to be pressed to move backward | true | `"DownArrow"` |
-| `"TurnLeftKey"` | `Consolekey` to be pressed to turn left | true | `"LeftArrow"` |
-| `"TurnRightKey"` | `Consolekey` to be pressed to turn right | true | `"RightArrow"` |
+| `"JumpKey"` | `ConsoleKey` to be pressed on Jump | true | `"Spacebar"` |
+| `"InteractKey"` | `ConsoleKey` to be pressed on Interact | true | `"I"` |
+| `"TargetLastTargetKey"` | `ConsoleKey` to be pressed to Target last target | true | `"G"` |
+| `"StandUpKey"` | `ConsoleKey` to be pressed to stand up | true | `"X"` |
+| `"ClearTargetKey"` | `ConsoleKey` to be pressed to clear current target | true | `"Insert"` |
+| `"StopAttackKey"` | `ConsoleKey` to be pressed to stop attack | true | `"Delete"` |
+| `"TargetNearestTargetKey"` | `ConsoleKey` to be pressed to target nearest target | true | `"Tab"` |
+| `"TargetTargetOfTargetKey"` | `ConsoleKey` to be pressed to target - target of target | true | `"F"` |
+| `"TargetPetKey"` | `ConsoleKey` to be pressed to target pet | true | `"Multiply"` |
+| `"PetAttackKey"` | `ConsoleKey` to be pressed to send attack pet | true | `"Subtract"` |
+| `"MountKey"` | `ConsoleKey` to be pressed to use mount | true | `"O"` |
+| `"ForwardKey"` | `ConsoleKey` to be pressed to move forward | true | `"UpArrow"` |
+| `"BackwardKey"` | `ConsoleKey` to be pressed to move backward | true | `"DownArrow"` |
+| `"TurnLeftKey"` | `ConsoleKey` to be pressed to turn left | true | `"LeftArrow"` |
+| `"TurnRightKey"` | `ConsoleKey` to be pressed to turn right | true | `"RightArrow"` |
 
 ### TargetMask
 
@@ -463,6 +481,10 @@ The path that the class follows is a `json` file in `/Json/path/` which contains
 "PathThereAndBack": true,                   // if true walks the path and the walks it backwards.
 "PathReduceSteps": true,                    // uses every other coordinate.
 ```
+### KeyActions
+
+Its a container type for `Sequence` of [KeyAction](#keyaction).
+
 ### KeyAction
 
 Each `KeyAction` has its own properties to describe what the action is all about. 
@@ -472,13 +494,13 @@ Can specify conditions with [Requirement(s)](#requirement) in order to create a 
 | Property Name | Description | Default value |
 | --- | --- | --- |
 | `"Name"` | Name of the KeyAction. For the `ActionBarPopulator`, lowercase means macro. | `""` |
-| `"Key"` | Key to press (`ConsoleKey`) | `""` |
+| `"Key"` | [ConsoleKey](https://learn.microsoft.com/en-us/dotnet/api/system.consolekey) to press | `""` |
 | `"Cost"` | [Adhoc Goals](#adhoc-goals) or [NPC Goal](#npc-goals) only, priority | `18` |
 | `"PathFilename"` | [NPC Goal](#npc-goals) only, this is a short path to get close to the NPC to avoid walls etc. | `""` |
 | `"HasCastBar"` | After key press cast bar is expected?<br>By default sets `BeforeCastStop`=`true` | `false` |
 | `"InCombat"` | Should combat matter when attempt to cast?<br>Accepted values:<br>* `"any value for doesn't matter"`<br>* `"true"`<br>* `"false"` | `false` |
 | `"Item"` | Like on use Trinket, `Food`, `Drink`.<br>The following spells counts as Item, `Throw`, `Auto Shot`, `Shoot` | `false` |
-| `"PressDuration"` | How many milliseconds to hold the key press | `50` |
+| `"PressDuration"` | How many minimum milliseconds to hold the key press down | `50` |
 | `"Form"` | Shapeshift/Stance form to be in to cast this spell<br>If setted, affects `WhenUsable` | `Form.None` |
 | `"Cooldown"` | **Note this is not the in-game cooldown!**<br>The time in milliseconds before KeyAction can be used again.<br>This property will be updated when the backend registers the `Key` press. It has no feedback from the game. | `400` |
 | `"Charge"` | How many consequent key press should happen before setting Cooldown | `1` |
@@ -633,9 +655,7 @@ Then as defined, in-order, executes those [KeyAction(s)](#keyaction) which fulfi
 
 Upon exiting **Assist Focus Goal**, the current target will be deselected / cleared.
 
-**Note**: You can use every `Buff` and `Debuff` names on the `focus`/`party1` without being targeted.
-
-Just have to prefix it with `F_` example: `F_Mark of the Wild` which means `focus`/`party1` has `Mark of the Wild` buff active.
+**Note**: You can use every `Buff` and `Debuff` names on the `focus`/`party1` without being targeted. Just have to prefix it with `F_` example: `F_Mark of the Wild` which means `focus`/`party1` has `Mark of the Wild` buff active.
 
 e.g. of a Balance Druid
 ```json
@@ -874,7 +894,7 @@ A requirement is something that must be evaluated to be `true` for the [KeyActio
 Not all [KeyAction](#keyaction) requires requirement(s), some rely on
 * `Cooldown` - populated manually
 * `ActionBarCooldownReader` - populated automatically
-* `ActionBarCostReader` - populated automatically including (`MinMana`, `MinRage`, `MinEnergy`, `MinRunicPower`, `MinRuneBlood`, `MinRuneFrost`, `MinRuneUnholy`)
+* `ActionBarCostReader` - populated automatically
 
 Can specify `Requirements` for complex condition.
 
@@ -1858,7 +1878,7 @@ The best places to grind are:
 * Flat ground.
 
 
-# Pathing
+# V1 Remote Pathing - PathingAPI
 
 Pathing is built into the bot so you don't need to do anything special except download the MPQ files. You can though run it on its own server to visualise routes as they are created by the bot, or to play with route finding.
 
@@ -1887,6 +1907,7 @@ There are 3 pages:
 
 * Watch API Calls
 * Search
+* Route
 * Swagger
 
 Requests to the API can be done in a new browser tab like this or via the Swagger tab. You can then view the result in the Watch API calls viewer.

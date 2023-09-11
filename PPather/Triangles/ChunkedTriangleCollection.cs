@@ -134,7 +134,7 @@ public sealed class ChunkedTriangleCollection
                     out v2.X, out v2.Y, out v2.Z, out _);
 
             float d = PointDistanceToTriangle(toon, v0, v1, v2);
-            if (d < toonSize)
+            if (d < toonSize / 2)
                 return true;
         }
 
@@ -168,10 +168,10 @@ public sealed class ChunkedTriangleCollection
             float dz1 = Abs(z1 - mid_z_hit);
 
             // Console.WriteLine("z0 " + z0 + " z1 " + z1 + " dz0 " + dz0+ " dz1 " + dz1 );
-            if (dz0 > stepLength / 2.0 && dz0 > 1.0)
+            if (dz0 > stepLength / 2.0f && dz0 > 1.0f)
                 return true; // too steep
 
-            if (dz1 > stepLength / 2.0 && dz1 > 1.0)
+            if (dz1 > stepLength / 2.0f && dz1 > 1.0f)
                 return true; // too steep
         }
         else
@@ -218,7 +218,7 @@ public sealed class ChunkedTriangleCollection
         // if (CheckForCollision(tc, ts, ref from_up, ref to_up)) { return true; }
 
         //close to the ground
-        const float stepDistance = 0.3f;
+        const float stepDistance = 0.4f;
 
         from_low = new Vector3(from.X, from.Y, from.Z);
         from_low.Z = z0 + stepDistance;
